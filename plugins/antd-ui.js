@@ -1,7 +1,9 @@
 import Vue from 'vue'
 import Antd from 'ant-design-vue/lib'
-
+import jquery from 'jquery'
 import {fetch} from '../static/js/api.js'
+
+Vue.prototype.$ = jquery
 window.fetch=fetch
 
 window.uploadurl="http://119.3.210.185:9010/scene/Uploadfile"
