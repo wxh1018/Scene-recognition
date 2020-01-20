@@ -25,7 +25,9 @@ export default {
       default: () => ({}),
     },
   },
-
+  mounted() {
+    // this.$router.push('/video/list?catalog=超车预警')
+  },
   methods:{
     Jumpto(info){
       this.$router.push({ path: "/video/list", query: { catalog: info.title }})

@@ -21,11 +21,11 @@
     >
       <a-row>
         <a-col>
-          <video width="100%" controls :src="Detial.videopath"></video>
+          <video width="100%" controls autoplay :src="Detial.videopath"></video>
           <!-- <video width="100%" controls :src="Detial.videopath"></video> -->
-          <a-button @click="show">查看详情</a-button>
-          <div class="imgs" v-show="showimg">
-            <img ref="imgs" v-for="(item , id) of imgs" :key="id" :src="item" alt />
+          <!-- <a-button @click="show">查看详情</a-button> -->
+          <div class="imgs">
+            <img @click="showModal" v-for="(item , id) of imgs" :key="id" :src="item" alt />
           </div>
         </a-col>
       </a-row>
@@ -41,20 +41,28 @@
         </div>
       </a-row>
     </a-drawer>
+    <a-modal title="分析结果" v-model="visible1" @ok="handleOk" width="1000px">
+      <img style="width:100%" :src="tarimg" alt />
+    </a-modal>
   </div>
 </template>
 <script>
 import $ from "jquery";
 import axios from "axios";
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
 export default {
   data() {
     return {
+      tarimg: "",
+      visible1: false,
       imgs: [],
       url: "",
       menutitle: "",
       visible: false,
       loading: false,
-      showimg: false,
+      time: null,
+      endparse: "", //视频解析结束时间
       columns: [
         {
           title: "场景名称",
@@ -108,6 +116,11 @@ export default {
     }
     // this.show()
   },
+  mounted() {
+    clearInterval(this.time);
+    this.imgs = [];
+    this.climg();
+  },
   watch: {
     $route(to, from) {
       console.log(to.query.catalog);
@@ -119,17 +132,10 @@ export default {
   },
   methods: {
     show() {
-      this.showimg = !this.showimg;
-      axios
-        .post("http://119.3.210.185:9010/scene/FindBydirectory", {
-          videodirectory: "1575010746802"
-        })
-        .then(data => {
-          console.log(data);
-        });
-      // axios.post('http://192.168.100.44:9010/scene/FindBydirectory').then(data=>{
-      //     console.log(1,data);
-      // })
+      let _this = this;
+      this.$message.success("开始解析视频").then(() => {
+        this.$message.info("视频正在解析中…………");
+      });
     },
     GetData() {
       let that = this;
@@ -149,6 +155,8 @@ export default {
       window.location.href = "http://120.27.227.253:8550/#/";
     },
     look(info) {
+      //调用接口
+      this.show();
       let that = this;
       console.log(info, 1);
       fetch("/scene/FindBydirectory", {
@@ -157,7 +165,7 @@ export default {
         console.log(res);
         that.Detial.videopath = `${defultfilepath}/${info.scenedata}`;
         that.url = `${res.data[0].videodirectory}\\${res.data[0].videoname}`;
-        that.videoParse();
+        this.videoParse();
         if (res.data.length > 0) {
           for (let i = 0; i < Number(res.data[0].imagelength); i++) {
             that.Detial.images.push(
@@ -175,10 +183,11 @@ export default {
     onClose() {
       this.visible = false;
     },
+    //视频解析
     videoParse() {
-      clearInterval(time);
-      var time = null;
-      
+      this.imgs = [];
+      NProgress.start();
+      clearInterval(this.time);
       let _this = this;
       let url = this.url;
       console.log(url);
@@ -186,33 +195,52 @@ export default {
       //     console.log(data);
       //     // this.videoparse = data
       // })
+      var timenum = 0;
+      console.log(timenum);
+      clearInterval(ti);
+      let ti = setInterval(() => {
+        timenum++;
+      }, 1000);
       this.$.post(
-        "http://119.3.210.185:9010/video/change",
+        "http://180.76.60.171:9010/video/change",
         { path: url },
         data => {
-            console.log(data)
-          if (data == 1) {
-              console.log(data)
-            clearInterval(time);
-          }
+          clearInterval(ti);
+          this.endparse = timenum;
+          this.$message.success("分析结束");
+          NProgress.done();
+          console.log("收到结束信息");
+          clearInterval(_this.time);
         }
       );
 
-      time = setInterval(get, 1000);
+      this.time = setInterval(get, 1000);
       function get() {
-        console.log(1);
-        _this.$.post("http://119.3.210.185:9010/video/change1", data => {
-          console.log(data);
-            _this.imgs = [];
+        _this.$.post("http://180.76.60.171:9010/video/change1", data => {
+          console.log(1, data);
+          _this.imgs = [];
           data.forEach(v => {
             v = v.substring(23);
-            console.log(v);
-            // this.imgs = "http://192.168.100.44"+v
             _this.imgs.push("http://119.3.210.185:9999//" + v);
-            // console.log(_this.$refs.imgs)
           });
         });
       }
+    },
+    climg() {
+      document.onclick = e => {
+        if (e.target.nodeName == "IMG") {
+          let src = e.target.src;
+          this.tarimg = src;
+        }
+      };
+    },
+    showModal() {
+      console.log("打开");
+      this.visible1 = true;
+    },
+    handleOk(e) {
+      console.log(e);
+      this.visible1 = false;
     }
   }
 };
@@ -230,7 +258,7 @@ export default {
 .imgs {
   height: 360px;
   width: 100%;
-  border: 3px solid gray;
+  border: 1px solid gray;
   overflow: auto;
   padding: 10px;
   box-sizing: border-box;
@@ -239,7 +267,10 @@ export default {
   display: none;
 }
 .imgs img {
-  width: 20%;
-  margin-bottom: 10px;
+  width: 18%;
+  margin: 5px;
+}
+.ant-modal {
+  width: 1000px !important;
 }
 </style>
