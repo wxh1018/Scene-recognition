@@ -17,6 +17,6 @@
     "nuxt": "^2.0.0"
   },
   "devDependencies": {
-    "jquery": "^3.4.1"
+    "jquery": "^3.5.0"
   }
 }
