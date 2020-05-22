@@ -4,7 +4,7 @@ import { message } from 'ant-design-vue'
 axios.defaults.timeout = 5000
 axios.defaults.headers.get['Content-Type'] = 'application/json;charset=UTF-8'
 
-axios.defaults.baseURL = 'http://119.3.210.185:9010'
+axios.defaults.baseURL = 'http://106.12.111.224:9010'
 // axios.defaults.baseURL = 'http://localhost:9010'
 
 axios.defaults.timeout = 1000 * 15

@@ -185,6 +185,7 @@ export default {
     },
     //视频解析
     videoParse() {
+      let baseurl = "http://106.12.111.224:9010";
       this.imgs = [];
       NProgress.start();
       clearInterval(this.time);
@@ -196,28 +197,26 @@ export default {
       //     // this.videoparse = data
       // })
       var timenum = 0;
-      console.log(timenum);
       clearInterval(ti);
       let ti = setInterval(() => {
         timenum++;
       }, 1000);
-      this.$.post(
-        "http://180.76.60.171:9010/video/change",
-        { path: url },
-        data => {
-          clearInterval(ti);
-          this.endparse = timenum;
-          this.$message.success("分析结束");
-          NProgress.done();
-          console.log("收到结束信息");
-          clearInterval(_this.time);
-        }
-      );
+      this.$.post(baseurl + "/video/change", { path: url }, data => {
+        clearInterval(ti);
+        this.endparse = timenum;
+        this.$message.success("分析结束");
+        NProgress.done();
+        console.log("收到结束信息");
+        clearInterval(this.time);
+      });
 
-      this.time = setInterval(get, 1000);
+      //获取图片
+      this.time = setInterval(() => {
+        get();
+      }, 1000);
       function get() {
-        _this.$.post("http://180.76.60.171:9010/video/change1", data => {
-          console.log(1, data);
+        _this.$.post(baseurl + "/video/change1", data => {
+          console.log("开始获取信息", data);
           _this.imgs = [];
           data.forEach(v => {
             v = v.substring(23);
